@@ -104,6 +104,29 @@ L'app récupère au démarrage (puis toutes les heures) un **bundle de configura
   est donc **désactivé par défaut** pour les profils non développeurs, et la vraie barrière reste le
   pare-feu/proxy de l'agence.
 
+## 7 bis. Authentification : OIDC et PKCS#11
+
+**OIDC (prioritaire)** — l'app est un client public natif (RFC 8252) :
+
+- _Authorization Code + PKCE_ dans le **navigateur système** (jamais une webview), redirection sur
+  `http://127.0.0.1:<port aléatoire>/callback`, `state` + `nonce` vérifiés, pas de client secret.
+- Découverte via `/.well-known/openid-configuration` ; jetons validés (signature JWKS, `iss`, `aud`,
+  `exp`). Refresh token conservé dans le coffre (§6), rotation à chaque usage.
+- L'access token authentifie l'app auprès du serveur de configuration (§7) : le bundle (prompt,
+  egress, plugins, savoirs) peut être **différent par groupe** (claims `groups`/`roles`).
+- Écran de connexion au premier lancement ; verrouillage de l'app à l'expiration de session.
+
+**PKCS#11 (carte à puce / jeton matériel)** — deux niveaux, cumulables :
+
+1. **Au niveau de l'IdP (recommandé)** : Keycloak (ou équivalent) fait l'authentification par
+   certificat X.509 de la carte, dans le navigateur système. L'app ne fait que de l'OIDC et
+   hérite de la carte sans code natif.
+2. **Dans l'app** : mTLS vers le serveur de configuration avec le certificat de la carte. Chromium
+   lit les jetons via la base NSS utilisateur (`~/.pki/nssdb`, module ajouté par `modutil`, sans
+   root) ; l'app choisit le certificat via l'événement `select-client-certificate`. Option
+   ultérieure : signature d'un défi par la clé de la carte (`pkcs11js`) pour déverrouiller le
+   coffre, le PIN étant saisi dans un dialogue natif et jamais transmis au modèle.
+
 ## 8. Bibliothèques de plugins et savoirs
 
 - **Plugins** = paquets Pi (`extensions`, `skills`, `prompts`) publiés sur un dépôt Git ou un
