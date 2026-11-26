@@ -1,4 +1,4 @@
-export const FORK_REPOSITORY = "Alchemilla1/pi-gui";
+export const FORK_REPOSITORY = "sicDANGBE/pi-agence-desktop";
 export const FORK_RELEASES_PAGE = `https://github.com/${FORK_REPOSITORY}/releases`;
 export const FORK_RELEASE_API = `https://api.github.com/repos/${FORK_REPOSITORY}/releases/latest`;
 

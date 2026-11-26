@@ -125,5 +125,5 @@ dmg:
 
 publish:
   provider: github
-  owner: Alchemilla1
-  repo: pi-gui
+  owner: sicDANGBE
+  repo: pi-agence-desktop

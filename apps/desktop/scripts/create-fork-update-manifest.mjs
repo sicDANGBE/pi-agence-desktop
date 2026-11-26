@@ -17,7 +17,7 @@ await writeFile(
   JSON.stringify(
     {
       schema: 1,
-      repository: "Alchemilla1/pi-gui",
+      repository: "sicDANGBE/pi-agence-desktop",
       version,
       platform: "win32",
       arch: "x64",

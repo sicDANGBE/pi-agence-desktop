@@ -806,7 +806,7 @@ async function runManualUpdateCheck(): Promise<void> {
         type: "info",
         title: "pi-gui",
         message: `Version ${result.latestVersion} is available.`,
-        detail: `You have ${result.currentVersion}. Update source: Alchemilla1/pi-gui (Muelsyse + Codex).`,
+        detail: `You have ${result.currentVersion}. Update source: sicDANGBE/pi-agence-desktop.`,
         buttons: [
           process.platform === "win32" && app.isPackaged ? "Prepare update" : "Download",
           "Later",

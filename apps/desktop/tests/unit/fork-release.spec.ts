@@ -18,7 +18,7 @@ const valid = {
 test("updates are pinned to the fork and exact stable version", () => {
   expect(validateForkManifest(valid, "1.1.0")).toEqual(valid);
   expect(forkAssetUrl("1.1.0", valid.asset)).toBe(
-    "https://github.com/Alchemilla1/pi-gui/releases/download/v1.1.0/pi-gui-1.1.0-win-x64.zip",
+    "https://github.com/sicDANGBE/pi-agence-desktop/releases/download/v1.1.0/pi-gui-1.1.0-win-x64.zip",
   );
   for (const version of ["../main", "1.1.0-beta.1", "latest"])
     expect(() => forkAssetUrl(version, valid.asset)).toThrow();
