@@ -31,6 +31,8 @@ const durableStateOwners = [
       "apps/desktop/electron/persistence/app-store-persistence.ts",
       "apps/desktop/electron/persistence/attachment-store.ts",
       "apps/desktop/electron/scheduled-tasks/scheduled-task-store.ts",
+      "apps/desktop/electron/agence/managed-config.ts",
+      "apps/desktop/electron/agence/secret-vault.ts",
       reviewedStore,
       checkpointStore,
     ],

@@ -14,6 +14,9 @@ const ACTION_POLICY = Object.freeze({
   "anthropics/claude-code-action": "v1",
 });
 
+/** Actions qui doivent figurer dans au moins un workflow du dépôt. */
+const REQUIRED_PRESENT = new Set(["actions/checkout", "actions/setup-node", "pnpm/action-setup"]);
+
 const MAJOR_REF = /^v\d+$/;
 const RUNTIME_SHIMS = [
   "FORCE_JAVASCRIPT_ACTIONS_TO_NODE24",
@@ -142,8 +145,9 @@ export async function assertWorkflowActionPolicy(repoRoot) {
     }
   }
 
+  // Les autres actions de la politique sont autorisées mais facultatives.
   for (const [actionId, required] of Object.entries(ACTION_POLICY)) {
-    if (!seen.has(actionId)) {
+    if (REQUIRED_PRESENT.has(actionId) && !seen.has(actionId)) {
       violations.push(`missing required action ${actionId}@${required}`);
     }
   }
