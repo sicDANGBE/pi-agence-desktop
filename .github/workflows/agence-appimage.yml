@@ -52,6 +52,22 @@ jobs:
       - name: Unit tests (agence)
         run: pnpm exec playwright test -c apps/desktop/playwright.config.ts apps/desktop/tests/unit/agence-
 
+      # Le mksquashfs embarqué par electron-builder (appimage@1.0.2) force un LD_LIBRARY_PATH
+      # vers une glibc 2.43 qui casse les binaires du runner. On garde ses runtimes et
+      # bibliothèques AppImage, mais on le remplace par le mksquashfs du système.
+      - name: Prepare AppImage tools
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq squashfs-tools
+          url=https://github.com/electron-userland/electron-builder-binaries/releases/download/appimage@1.0.2/appimage-tools-runtime-20251108.tar.gz
+          curl -fsSL "$url" -o "$RUNNER_TEMP/appimage-tools.tar.gz"
+          echo "a784a8c26331ec2e945c23d6bdb14af5c9df27f5939825d84b8709c61dc81eb0  $RUNNER_TEMP/appimage-tools.tar.gz" | sha256sum -c -
+          mkdir -p "$RUNNER_TEMP/appimage-tools"
+          tar -xzf "$RUNNER_TEMP/appimage-tools.tar.gz" -C "$RUNNER_TEMP/appimage-tools"
+          root=$(dirname "$(find "$RUNNER_TEMP/appimage-tools" -maxdepth 3 -name mksquashfs | head -1)")
+          rm -f "$root/mksquashfs" && ln -s "$(command -v mksquashfs)" "$root/mksquashfs"
+          test -f "$root/runtimes/runtime-x64"
+          echo "APPIMAGE_TOOLS_PATH=$root" >> "$GITHUB_ENV"
+
       - name: Package AppImage
         run: |
           cd apps/desktop
