@@ -1,3 +1,13 @@
+> **Pi Agence Desktop** — fork de [`minghinmatthewlam/pi-gui`](https://github.com/minghinmatthewlam/pi-gui) (MIT)
+> incluant les espaces SSH de [`Alchemilla1/pi-gui`](https://github.com/Alchemilla1/pi-gui).
+> Assistant IA de bureau pour l'agence : AppImage installée sans sudo, configuration et prompt système
+> centralisés et signés, coffre de secrets, tâches planifiées via un daemon utilisateur.
+> Spécification : [`docs/agence/SPEC.md`](docs/agence/SPEC.md). Téléchargement : onglet *Releases*.
+>
+> Le README d'origine suit.
+
+---
+
 # pi-gui
 
 The desktop app for the [pi](https://github.com/earendil-works/pi) coding agent.
