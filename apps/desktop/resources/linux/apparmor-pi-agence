@@ -1,0 +1,14 @@
+# Profil AppArmor optionnel pour Pi Agence (à déployer UNE fois par l'admin, avec root).
+# Il autorise les user namespaces pour le binaire de l'AppImage, ce qui réactive la
+# sandbox Chromium sur Ubuntu >= 23.10. Sans ce profil, l'app démarre en --no-sandbox.
+#
+#   sudo install -m 644 apparmor-pi-agence /etc/apparmor.d/pi-agence
+#   sudo apparmor_parser -r /etc/apparmor.d/pi-agence
+abi <abi/4.0>,
+include <tunables/global>
+
+profile pi-agence /tmp/.mount_*/pi-agence.bin flags=(unconfined) {
+  userns,
+
+  include if exists <local/pi-agence>
+}
