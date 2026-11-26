@@ -1,0 +1,82 @@
+name: Agence AppImage
+
+# Build Linux AppImage du fork agence et publication dans les Releases GitHub.
+# - push d'un tag vX.Y.Z  -> Release publiée vX.Y.Z
+# - lancement manuel      -> pré-release "nightly" écrasée à chaque build
+on:
+  push:
+    tags:
+      - "v[0-9]*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: agence-appimage-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  appimage:
+    if: github.repository == 'sicDANGBE/pi-agence-desktop'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Version
+        id: version
+        run: |
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+            echo "tag=$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
+          else
+            base=$(node -p "require('./apps/desktop/package.json').version")
+            echo "value=${base}-nightly.${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+            echo "tag=nightly" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Unit tests (agence)
+        run: pnpm exec playwright test -c apps/desktop/playwright.config.ts apps/desktop/tests/unit/agence-
+
+      - name: Package AppImage
+        run: |
+          cd apps/desktop
+          pnpm run build
+          node scripts/run-electron-builder.mjs --linux AppImage \
+            --publish never \
+            "-c.extraMetadata.version=${{ steps.version.outputs.value }}"
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          shopt -s nullglob
+          files=(apps/desktop/release/*.AppImage)
+          if (( ${#files[@]} == 0 )); then echo "Aucune AppImage produite" >&2; exit 1; fi
+          sha256sum "${files[@]}" > apps/desktop/release/SHA256SUMS.txt
+          if [[ "$TAG" == "nightly" ]]; then
+            gh release delete nightly --yes --cleanup-tag || true
+            gh release create nightly --prerelease --target "$GITHUB_SHA" \
+              --title "Nightly $VERSION" \
+              --notes "Build automatique de $GITHUB_SHA. Non signé." \
+              "${files[@]}" apps/desktop/release/SHA256SUMS.txt
+          else
+            gh release create "$TAG" --title "$TAG" --generate-notes \
+              "${files[@]}" apps/desktop/release/SHA256SUMS.txt
+          fi
