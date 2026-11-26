@@ -31,6 +31,7 @@ import {
 } from "./session-supervisor.js";
 import { RuntimeSupervisor, type RuntimeSupervisorOptions } from "./runtime-supervisor.js";
 import { createRuntimeDependencies } from "./runtime-deps.js";
+import { SessionManager } from "@earendil-works/pi-coding-agent";
 import { generateThreadTitle, type GenerateThreadTitleOptions } from "./thread-title-generator.js";
 
 export interface PiSdkDriverConfig extends PiSdkDriverOptions, RuntimeSupervisorOptions {}
@@ -57,6 +58,11 @@ export class PiSdkDriver implements SessionDriver {
 
   createSession(workspace: WorkspaceRef, options?: CreateSessionOptions): Promise<SessionSnapshot> {
     return this.supervisor.createSession(workspace, options);
+  }
+
+  /** Discover centrally stored local histories without searching project directories. */
+  listLocalSessionHistory() {
+    return SessionManager.listAll();
   }
 
   validateForkSession(sourceRef: SessionRef, options: ForkSessionOptions): Promise<void> {

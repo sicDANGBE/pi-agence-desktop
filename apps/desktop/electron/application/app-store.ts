@@ -1,16 +1,18 @@
 import { JsonCatalogStore } from "@pi-gui/catalogs/node";
-import { sessionKey } from "@pi-gui/session-driver";
+import { discoverLocalSessionWorkspaces } from "../workspace/local-session-discovery";
+import { sessionKey, parseSshWorkspace } from "@pi-gui/session-driver";
 import type { ExtensionFlagValues, SessionSchemaInfo } from "@pi-gui/session-driver";
 import type { BrowserWindow } from "electron";
 import { randomUUID } from "node:crypto";
 import { readFile, stat } from "node:fs/promises";
 import { homedir, hostname } from "node:os";
-import { join, resolve, sep } from "node:path";
+import { dirname, join, resolve, sep } from "node:path";
 import {
   applyHostUiRequestToExtensionUiState,
   type GenerateThreadTitleOptions,
   isExtensionUiDialogRequest,
   PiSdkDriver,
+  createSshAwareDriver,
   type PiSdkDriverConfig,
   SessionLeasedError,
 } from "@pi-gui/pi-sdk-driver";
@@ -180,6 +182,7 @@ type ExtensionUiDialogRequest = Extract<
   readonly timeoutMs?: number;
 };
 export interface DesktopAppStoreOptions {
+  readonly remoteToolBridge?: import("@pi-gui/pi-sdk-driver").RemoteToolBridge;
   readonly userDataDir: string;
   readonly initialWorkspacePaths: readonly string[];
   readonly getWindow?: () => BrowserWindow | null;
@@ -312,7 +315,11 @@ export class DesktopAppStore {
         : {}),
     };
 
-    this.driver = new PiSdkDriver(driverOptions);
+    this.driver = createSshAwareDriver({
+      ...driverOptions,
+      catalogStorage: this.catalogStore,
+      remoteToolBridge: options.remoteToolBridge,
+    });
     this.worktreeRoot = join(options.userDataDir, "worktrees");
     this.isAppWorktreePath = appWorktreeRootMatcher(this.worktreeRoot);
     this.worktreeManager = new GitWorktreeManager({
@@ -1655,11 +1662,13 @@ export class DesktopAppStore {
     await this.initialize();
     const entries = await this.driver.runtimeSupervisor.listCustomProviders();
     return entries.map((entry) => ({
+      ...(entry.api !== undefined ? { api: entry.api } : {}),
       providerId: entry.providerId,
       baseUrl: entry.baseUrl,
       ...(entry.apiKey !== undefined ? { apiKey: entry.apiKey } : {}),
       models: entry.models.map((model) => ({
         id: model.id,
+        ...(model.reasoning !== undefined ? { reasoning: model.reasoning } : {}),
         ...(model.contextWindow !== undefined ? { contextWindow: model.contextWindow } : {}),
       })),
     }));
@@ -1673,11 +1682,13 @@ export class DesktopAppStore {
       workspaceId,
       (ws) =>
         this.driver.runtimeSupervisor.setCustomProvider(ws, {
+          ...(config.api !== undefined ? { api: config.api } : {}),
           providerId: config.providerId,
           baseUrl: config.baseUrl,
           ...(config.apiKey !== undefined ? { apiKey: config.apiKey } : {}),
           models: config.models.map((model) => ({
             id: model.id,
+            ...(model.reasoning !== undefined ? { reasoning: model.reasoning } : {}),
             ...(model.contextWindow !== undefined ? { contextWindow: model.contextWindow } : {}),
           })),
         }),
@@ -2188,6 +2199,19 @@ export class DesktopAppStore {
         .filter(Boolean);
       const knownWorkspaces = await this.driver.listWorkspaces();
       const workspacesToSync = new Map<string, string | undefined>();
+      const discovered = await discoverLocalSessionWorkspaces(
+        join(dirname(this.scheduledTasksFilePath), "discovered-pi-workspaces.json"),
+        knownWorkspaces.workspaces.map((workspace) => workspace.path),
+        this.catalogStore,
+        await this.driver.listLocalSessionHistory(),
+      ).catch((error: unknown) => {
+        startupDiagnostics.push({
+          scope: "application",
+          message: `Local Pi history discovery failed: ${error instanceof Error ? error.message : String(error)}`,
+        });
+        return [];
+      });
+      for (const workspacePath of discovered) workspacesToSync.set(workspacePath, undefined);
 
       for (const workspacePath of initialWorkspacePaths) {
         workspacesToSync.set(workspacePath, undefined);
@@ -2333,9 +2357,9 @@ export class DesktopAppStore {
     displayName: string | undefined,
   ): Promise<StartupDiagnostic | undefined> {
     try {
-      const workspaceStat = await stat(workspacePath);
-      if (!workspaceStat.isDirectory()) {
-        throw new Error("Path is not a directory.");
+      if (!parseSshWorkspace(workspacePath)) {
+        const workspaceStat = await stat(workspacePath);
+        if (!workspaceStat.isDirectory()) throw new Error("Path is not a directory.");
       }
       await this.driver.syncWorkspace(workspacePath, displayName);
       return undefined;
@@ -3495,6 +3519,7 @@ export class DesktopAppStore {
             this.sessionState.activeAssistantMessageBySession,
             event.sessionRef,
             event.text,
+            event.channel,
           );
           break;
         case "sessionOpened":

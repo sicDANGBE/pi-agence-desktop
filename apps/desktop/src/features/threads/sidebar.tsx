@@ -10,6 +10,8 @@ import {
   type MutableRefObject,
 } from "react";
 import { createPortal } from "react-dom";
+import { SshWorkspaceDialog } from "./ssh-workspace-dialog";
+import "../../styles/ssh-workspace.css";
 import {
   DndContext,
   DragOverlay,
@@ -174,6 +176,7 @@ export function Sidebar(props: SidebarProps) {
     sidebarWidth === undefined ? undefined : { "--sidebar-width": `${sidebarWidth}px` };
   const [activeId, setActiveId] = useState<string | null>(null);
   const [archivedOpen, setArchivedOpen] = useState(false);
+  const [sshDialogOpen, setSshDialogOpen] = useState(false);
   const [expandedHistory, setExpandedHistory] = useState<ReadonlySet<string>>(() => new Set());
   const [collapsedThreads, setCollapsedThreads] = useState<ReadonlySet<string>>(() => new Set());
   const toggleThread = (key: string) =>
@@ -547,6 +550,15 @@ export function Sidebar(props: SidebarProps) {
             >
               <FolderIcon />
             </button>
+            <button
+              aria-label="Connect SSH workspace"
+              title="Connect SSH workspace"
+              className="icon-button"
+              type="button"
+              onClick={() => setSshDialogOpen(true)}
+            >
+              ↗
+            </button>
           </div>
         </div>
 
@@ -731,6 +743,16 @@ export function Sidebar(props: SidebarProps) {
           </DndContext>
         )}
       </div>
+      {sshDialogOpen ? (
+        <SshWorkspaceDialog
+          api={api}
+          onClose={() => setSshDialogOpen(false)}
+          onConnect={async (uri) => {
+            const state = await updateSnapshot(setSnapshot, () => api.addWorkspacePath(uri));
+            if (state.lastError) throw new Error(state.lastError);
+          }}
+        />
+      ) : null}
     </aside>
   );
 }

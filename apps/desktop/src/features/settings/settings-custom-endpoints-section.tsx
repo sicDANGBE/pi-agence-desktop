@@ -171,6 +171,9 @@ function CustomEndpointDialog({
   const initial = mode.kind === "edit" ? mode.original : undefined;
   const [providerId, setProviderId] = useState(initial?.providerId ?? "");
   const [baseUrl, setBaseUrl] = useState(initial?.baseUrl ?? "");
+  const [protocol, setProtocol] = useState<NonNullable<CustomProviderConfig["api"]>>(
+    initial?.api ?? "openai-completions",
+  );
   const [apiKey, setApiKey] = useState(initial?.apiKey ?? "");
   const [models, setModels] = useState<CustomProviderModelConfig[]>(
     initial ? [...initial.models] : [],
@@ -218,6 +221,7 @@ function CustomEndpointDialog({
     setProbePending(true);
     setProbeError(undefined);
     const result = await api.probeCustomProviderModels({
+      api: protocol,
       baseUrl: baseUrl.trim(),
       apiKey: apiKey.trim() ? apiKey.trim() : undefined,
     });
@@ -267,6 +271,7 @@ function CustomEndpointDialog({
     setSavePending(true);
     setFormError(undefined);
     const error = await onSave({
+      api: protocol,
       providerId: providerId.trim(),
       baseUrl: baseUrl.trim(),
       ...(apiKey.trim() ? { apiKey: apiKey.trim() } : {}),
@@ -352,6 +357,27 @@ function CustomEndpointDialog({
             </span>
           </label>
           <label className="settings-field">
+            <span>API protocol</span>
+            <select
+              aria-label="API protocol"
+              className="settings-search"
+              value={protocol}
+              disabled={savePending}
+              onChange={(event) =>
+                setProtocol(event.target.value as NonNullable<CustomProviderConfig["api"]>)
+              }
+            >
+              <option value="openai-completions">OpenAI Chat Completions</option>
+              <option value="openai-responses">OpenAI Responses</option>
+              <option value="anthropic-messages">Anthropic Messages</option>
+            </select>
+            <span className="settings-row__description">
+              For Anthropic Messages, use the service root (without /v1/messages); a trailing /v1 is
+              normalized on save. Model IDs can also be entered manually. Existing per-model
+              overrides in models.json are preserved.
+            </span>
+          </label>
+          <label className="settings-field">
             <span>{t("settings.provider.status.apiKey")}</span>
             <input
               aria-label={t("settings.provider.status.apiKey")}
@@ -397,6 +423,30 @@ function CustomEndpointDialog({
               onManualAdd={handleManualAdd}
               disabled={savePending}
             />
+            {models.map((model) => (
+              <label
+                key={model.id}
+                className="settings-field"
+                style={{ display: "flex", gap: 8, alignItems: "center" }}
+              >
+                <input
+                  type="checkbox"
+                  aria-label={`Reasoning supported: ${model.id}`}
+                  checked={model.reasoning === true}
+                  disabled={savePending}
+                  onChange={(event) =>
+                    setModels((current) =>
+                      current.map((entry) =>
+                        entry.id === model.id
+                          ? { ...entry, reasoning: event.target.checked }
+                          : entry,
+                      ),
+                    )
+                  }
+                />
+                <span>{model.id}: supports reasoning</span>
+              </label>
+            ))}
             <p className="settings-row__description">
               {t("ui.toolCallingIsRequiredSmallerModels7BOftenDoNotEmitOpenAI")}
             </p>

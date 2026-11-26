@@ -1,6 +1,9 @@
 import { ipcMain, shell, type BrowserWindow, type IpcMainInvokeEvent } from "electron";
 import path from "node:path";
 import type { SessionRef } from "@pi-gui/session-driver";
+import { parseSshWorkspace } from "@pi-gui/session-driver";
+import { installRemoteHost } from "../remote/install-host";
+import { listSshHosts, browseSshDirectory } from "../remote/ssh-discovery";
 import type {
   ComposerAttachment,
   DesktopAppState,
@@ -331,8 +334,32 @@ export function registerDesktopIpc({
     windows.resendSelectedTranscript(event.sender);
   });
 
+  handleMainFrame(
+    desktopIpc.listSshHosts,
+    () => undefined,
+    () => listSshHosts(),
+  );
+  handleMainFrame(
+    desktopIpc.browseSshDirectory,
+    (raw) => {
+      if (!Array.isArray(raw)) throw new Error("Invalid SSH directory request");
+      return {
+        host: expectNonEmptyString(raw[0], "host"),
+        path: expectOptionalString(raw[1], "directory") ?? "",
+      };
+    },
+    ({ host, path }) => browseSshDirectory(host, path),
+  );
   ipcMain.handle(desktopIpc.addWorkspacePath, (event, rawPath: unknown) =>
-    run(event, () => owners.workspace.addWorkspace(expectNonEmptyString(rawPath, "workspacePath"))),
+    run(event, async () => {
+      const workspacePath = expectNonEmptyString(rawPath, "workspacePath");
+      const remote = parseSshWorkspace(workspacePath);
+      if (remote) {
+        await browseSshDirectory(remote.host, remote.path);
+        await installRemoteHost(workspacePath);
+      }
+      return owners.workspace.addWorkspace(workspacePath);
+    }),
   );
   ipcMain.handle(desktopIpc.pickWorkspace, (event) =>
     capabilities.pickWorkspace(senderWindow(windows, event)),

@@ -24,6 +24,10 @@ files:
       - "**/*"
 
 extraResources:
+  - from: resources/pi-subagent-launcher.cjs
+    to: pi-subagent-launcher.cjs
+  - from: resources/apply-fork-update.ps1
+    to: apply-fork-update.ps1
   - from: resources/icon.png
     to: icon.png
 
@@ -121,5 +125,5 @@ dmg:
 
 publish:
   provider: github
-  owner: minghinmatthewlam
+  owner: Alchemilla1
   repo: pi-gui

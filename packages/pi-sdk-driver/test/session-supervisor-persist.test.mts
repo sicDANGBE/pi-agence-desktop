@@ -64,7 +64,8 @@ async function drive(event: unknown) {
     handleAgentEvent: (record: unknown, event: unknown) => void;
   };
   const { record, emitted } = makeRecord();
-  supervisor.handleAgentEvent(record, event);
+  for (const next of Array.isArray(event) ? event : [event])
+    supervisor.handleAgentEvent(record, next);
   await record.eventQueue;
   return { catalogWrites: catalog.calls.length, emitted };
 }
@@ -98,3 +99,58 @@ await test("a discrete agent event still writes the catalog", async () => {
   assert.ok(emitted.length > 0, "expected the discrete event to emit");
   assert.equal(catalogWrites, 1);
 });
+
+for (const kind of ["text", "thinking"] as const) {
+  await test(`queued ${kind} snapshots do not duplicate later deltas`, async () => {
+    const message = { role: "assistant", content: [{ type: kind, [kind]: "initial content" }] };
+    const { emitted } = await drive([
+      {
+        type: "message_update",
+        message,
+        assistantMessageEvent: { type: `${kind}_start`, partial: message, contentIndex: 0 },
+      },
+      {
+        type: "message_update",
+        message,
+        assistantMessageEvent: {
+          type: `${kind}_delta`,
+          partial: message,
+          contentIndex: 0,
+          delta: " content",
+        },
+      },
+      {
+        type: "message_update",
+        message,
+        assistantMessageEvent: {
+          type: `${kind}_end`,
+          partial: message,
+          contentIndex: 0,
+          content: "initial content",
+        },
+      },
+    ]);
+    assert.deepEqual(
+      emitted
+        .filter((e) => e.type === "assistantDelta")
+        .map((e) => ("text" in e ? e.text : undefined)),
+      ["initial content"],
+    );
+  });
+  await test(`initial ${kind} content reaches the UI without a catalog write`, async () => {
+    const message = { role: "assistant", content: [{ type: kind, [kind]: "initial content" }] };
+    const { emitted, catalogWrites } = await drive({
+      type: "message_update",
+      message,
+      assistantMessageEvent: { type: `${kind}_start`, partial: message, contentIndex: 0 },
+    });
+    const delta = emitted.find((event) => event.type === "assistantDelta");
+    assert.ok(delta && "text" in delta);
+    assert.equal(delta.text, "initial content");
+    assert.equal(
+      "channel" in delta ? delta.channel : undefined,
+      kind === "thinking" ? "thinking" : undefined,
+    );
+    assert.equal(catalogWrites, 0);
+  });
+}
