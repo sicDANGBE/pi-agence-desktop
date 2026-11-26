@@ -386,7 +386,7 @@ function showMcpSignInUrl(url: string, reason: string): void {
   const window = mainWindow && canPublishToWindow(mainWindow) ? mainWindow : undefined;
   const options: MessageBoxOptions = {
     type: "warning",
-    title: "pi-gui",
+    title: "Pi Agence",
     message: "Open this MCP sign-in link yourself",
     detail: `${reason} Check the link before you open it:\n\n${url}`,
     buttons: ["Copy link", "Close"],
@@ -804,7 +804,7 @@ async function runManualUpdateCheck(): Promise<void> {
       // be silently suppressed if the OS permission is denied.
       const choice = await showDialog({
         type: "info",
-        title: "pi-gui",
+        title: "Pi Agence",
         message: `Version ${result.latestVersion} is available.`,
         detail: `You have ${result.currentVersion}. Update source: sicDANGBE/pi-agence-desktop.`,
         buttons: [
@@ -856,7 +856,7 @@ async function runManualUpdateCheck(): Promise<void> {
     if (result.status === "up-to-date") {
       await showDialog({
         type: "info",
-        title: "pi-gui",
+        title: "Pi Agence",
         message: `You're up to date on version ${result.currentVersion}.`,
         buttons: ["OK"],
       });
@@ -865,7 +865,7 @@ async function runManualUpdateCheck(): Promise<void> {
 
     await showDialog({
       type: "warning",
-      title: "pi-gui",
+      title: "Pi Agence",
       message: "Could not check for updates right now.",
       detail: result.message,
       buttons: ["OK"],
@@ -874,7 +874,7 @@ async function runManualUpdateCheck(): Promise<void> {
     console.error("pi-gui: manual update check failed:", error);
     await showDialog({
       type: "warning",
-      title: "pi-gui",
+      title: "Pi Agence",
       message: "Could not check for updates right now.",
       detail: error instanceof Error ? error.message : String(error),
       buttons: ["OK"],
@@ -1616,7 +1616,7 @@ async function promptForText(
     maximizable: false,
     fullscreenable: false,
     autoHideMenuBar: process.platform !== "darwin",
-    title: "pi-gui",
+    title: "Pi Agence",
     webPreferences: { sandbox: true, contextIsolation: true, nodeIntegration: false },
   });
 

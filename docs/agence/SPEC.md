@@ -1,19 +1,18 @@
-# Pi Agence Desktop — spécification
+# Pi Agence — spécification
 
-Fork de [`minghinmatthewlam/pi-gui`](https://github.com/minghinmatthewlam/pi-gui) (MIT) enrichi des
-espaces SSH de [`Alchemilla1/pi-gui`](https://github.com/Alchemilla1/pi-gui). Objectif : un assistant
-IA de bureau, façon Claude Desktop, pour **tous** les collaborateurs de l'agence, y compris les non
-techniciens. Distribution en **AppImage** installée dans la session de l'utilisateur, **sans sudo**.
+Objectif : un assistant IA de bureau, façon Claude Desktop, pour **tous** les collaborateurs de
+l'agence, y compris les non techniciens. Distribution en **AppImage** installée dans la session de
+l'utilisateur, **sans sudo**.
 
 ## 1. Principes
 
 1. **Aucun terminal visible** pour l'utilisateur standard. Le mode « développeur » (terminal, diff,
-   worktrees hérités de pi-gui) reste disponible mais masqué par défaut et activable par politique.
+   worktrees) reste disponible mais masqué par défaut et activable par politique.
 2. **Tout tourne en utilisateur, jamais en root.** Le daemon refuse de démarrer si `uid == 0`.
 3. **L'agence garde la main** : configuration, prompt système, sorties réseau autorisées, plugins et
    savoirs sont fournis par un serveur de configuration signé.
 4. **Les secrets ne passent jamais par le modèle.** L'agent manipule des références, pas des valeurs.
-5. **Rester fin au-dessus de Pi** (règle héritée d'upstream) : on ajoute des extensions Pi et des
+5. **Rester fin au-dessus de Pi** : on ajoute des extensions Pi et des
    owners Electron, on ne réécrit pas le runtime.
 
 ## 2. Interface
@@ -33,11 +32,11 @@ techniciens. Distribution en **AppImage** installée dans la session de l'utilis
 | Mail       | `mail_search`, `mail_read`, `mail_draft`, `mail_send` (validation humaine obligatoire) | IMAP (`imapflow`) / SMTP (`nodemailer`), comptes configurés dans ⚙️, mots de passe dans le coffre |
 | Diagrammes | `diagram_render` (Mermaid → SVG/PNG), export draw.io                                   | Rendu dans le renderer, export fichier                                                            |
 | Jira       | `jira_list_my_issues`, `jira_get`, `jira_comment`                                      | API REST Jira, jeton dans le coffre (MCP en phase 4)                                              |
-| Machines   | sessions SSH (héritées d'Alchemilla1)                                                  | hôtes depuis `~/.ssh/config`, clés via l'agent SSH, jamais copiées                                |
+| Machines   | sessions SSH                                                                           | hôtes depuis `~/.ssh/config`, clés via l'agent SSH, jamais copiées                                |
 
 ## 4. Tâches planifiées et daemon
 
-pi-gui sait déjà planifier (`once`, `daily`, `weekly`, `interval`) mais **seulement application
+L'application sait déjà planifier (`once`, `daily`, `weekly`, `interval`) mais **seulement application
 ouverte**. On ajoute :
 
 - **Déclencheur `at-login`** : nouvelle variante de `ScheduledTaskSchedule`, exécutée une fois par
@@ -56,7 +55,7 @@ ouverte**. On ajoute :
 
 Choix : **`pi-memory` (jayzeng, MIT)**, l'extension la plus utilisée : `MEMORY.md` curée, journaux
 quotidiens, recherche hybride (BM25 + vecteurs) via `qmd`, injection sélective dans le contexte.
-Ajouts du fork :
+Ajouts de Pi Agence :
 
 - **Validation par l'utilisateur** : une préférence détectée (« écris mes mails en vouvoyant »,
   « je suis les tickets du projet X ») est proposée en _carte à valider_ avant écriture durable,
@@ -143,13 +142,13 @@ extensions Pi natives. Critères : contrôle des secrets, egress, validation hum
 
 | Phase | Contenu                                                                    | Critère de sortie                                   |
 | ----- | -------------------------------------------------------------------------- | --------------------------------------------------- |
-| 0     | Base fork + build AppImage en CI                                           | AppImage téléchargeable dans les Releases           |
+| 0     | Base + build AppImage en CI                                                | AppImage téléchargeable dans les Releases           |
 | 1     | Socle sécurité : config signée, garde d'egress, coffre, daemon/autostart   | Tests unitaires verts ; démarrage sans sudo vérifié |
 | 2     | Interface simplifiée (mode non développeur), ⚙️, écran Mémoire, `at-login` | Un non-technicien fait un briefing sans aide        |
 | 3     | Modules Documents, Mail, Diagrammes, Jira                                  | Démo bout en bout sur un poste de l'agence          |
 | 4     | Catalogue plugins/savoirs, MCP                                             | Plugin interne installé depuis le catalogue         |
 
-## 11. Code de ce fork
+## 11. Organisation du code
 
 Les ajouts vivent dans `apps/desktop/electron/agence/` (process main uniquement) et sont testés
 dans `apps/desktop/tests/unit/agence-*.spec.ts`. Ils ne modifient pas les owners existants tant que

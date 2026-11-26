@@ -189,7 +189,7 @@ export const en = {
   "settings.appearance.mode.dark": "Dark",
   "settings.appearance.language.title": "Language",
   "settings.appearance.language.description":
-    "Follow the system language, or pick the language pi-gui shows.",
+    "Follow the system language, or pick the language Pi Agence shows.",
   "settings.appearance.language.label": "Language",
   "settings.appearance.language.system": "Follow system",
   "settings.appearance.colorPreset.title": "Color preset",
@@ -198,7 +198,7 @@ export const en = {
   "settings.appearance.transparency.description":
     "Let desktop colors show through supported surfaces.",
   "settings.appearance.transparency.label": "Window transparency",
-  "settings.appearance.preset.default": "The pi-gui palette.",
+  "settings.appearance.preset.default": "The Pi Agence palette.",
   "settings.appearance.preset.catppuccin": "Soft pastel Latte and Mocha variants.",
   "settings.appearance.preset.tokyo-night": "A cool editor palette with a bright Day variant.",
   "settings.appearance.preset.nord": "Low-contrast arctic neutrals and blue accents.",
@@ -208,7 +208,7 @@ export const en = {
   "settings.appearance.preset.vscode": "Familiar editor colours with blue accents.",
   "settings.notifications.groupSystem": "System",
   "settings.notifications.groupSystem.description":
-    "macOS decides whether pi-gui can show desktop notifications at all.",
+    "macOS decides whether Pi Agence can show desktop notifications at all.",
   "settings.notifications.access.title": "macOS notification access",
   "settings.notifications.access.enabled": "Enabled",
   "settings.notifications.access.turnedOff": "Turned off",
@@ -216,20 +216,20 @@ export const en = {
   "settings.notifications.access.unavailable": "Unavailable",
   "settings.notifications.access.checking": "Checking…",
   "settings.notifications.access.descriptionGranted":
-    "macOS will allow pi-gui to show desktop notifications for background thread updates.",
+    "macOS will allow Pi Agence to show desktop notifications for background thread updates.",
   "settings.notifications.access.descriptionDenied":
-    "macOS notifications are turned off for pi-gui. Enable them in System Settings to receive background completion alerts.",
+    "macOS notifications are turned off for Pi Agence. Enable them in System Settings to receive background completion alerts.",
   "settings.notifications.access.descriptionDefault":
-    "pi-gui has not asked macOS for desktop notification access yet.",
+    "Pi Agence has not asked macOS for desktop notification access yet.",
   "settings.notifications.access.descriptionUnsupported":
     "Desktop notifications are unavailable on this system.",
   "settings.notifications.access.descriptionChecking":
-    "Checking whether macOS notifications are available for pi-gui.",
+    "Checking whether macOS notifications are available for Pi Agence.",
   "settings.notifications.turnOn.title": "Turn on notifications",
   "settings.notifications.turnOn.descriptionAsk":
-    "pi-gui asks macOS when active work first moves into the background. You can also ask now.",
+    "Pi Agence asks macOS when active work first moves into the background. You can also ask now.",
   "settings.notifications.turnOn.descriptionOpen":
-    "macOS notifications are already turned off for pi-gui. Open System Settings to enable them again.",
+    "macOS notifications are already turned off for Pi Agence. Open System Settings to enable them again.",
   "settings.notifications.turnOn.ask": "Ask macOS",
   "settings.notifications.turnOn.openSettings": "Open System Settings",
   "settings.notifications.groupInApp": "In-app alerts",

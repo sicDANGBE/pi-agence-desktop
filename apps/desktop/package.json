@@ -2,10 +2,10 @@
   "name": "@pi-gui/desktop",
   "private": true,
   "version": "1.0.6",
-  "author": "Matthew Lam",
+  "author": "sicDANGBE",
   "license": "MIT",
-  "description": "Codex-style desktop shell for pi",
-  "homepage": "https://github.com/minghinmatthewlam/pi-gui",
+  "description": "Pi Agence — assistant IA de bureau",
+  "homepage": "https://github.com/sicDANGBE/pi-agence-desktop",
   "main": "out/main/main.js",
   "scripts": {
     "build:deps": "pnpm --dir ../.. --filter @pi-gui/session-driver --filter @pi-gui/pi-sdk-driver --filter @pi-gui/extension-ui --filter @pi-gui/catalogs run build",

@@ -1,6 +1,7 @@
-appId: com.pi-gui.desktop
-productName: pi-gui
-copyright: Copyright 2026 Matthew Lam
+appId: fr.sicdangbe.pi-agence
+productName: Pi Agence
+copyright: Copyright 2026 sicDANGBE et contributeurs (MIT)
+afterPack: scripts/after-pack-linux-launcher.cjs
 electronVersion: 37.10.3
 
 directories:
@@ -30,6 +31,8 @@ extraResources:
     to: apply-fork-update.ps1
   - from: resources/icon.png
     to: icon.png
+  - from: resources/linux/apparmor-pi-agence
+    to: linux/apparmor-pi-agence
 
 asar: true
 asarUnpack:
@@ -57,23 +60,21 @@ mac:
       to: MacOS/pi-gui-notification-status-helper
 
 linux:
-  category: Development
-  executableName: pi-gui
-  maintainer: Matthew Lam <minghinmatthew.lam@gmail.com>
-  vendor: pi-gui
-  synopsis: Codex-style desktop app for the pi coding agent
-  description: A native desktop interface for pi coding agent sessions, workspaces, and tools.
+  category: Office
+  executableName: pi-agence
+  artifactName: pi-agence-${version}-${arch}.${ext}
+  maintainer: sicDANGBE <86024465+sicDANGBE@users.noreply.github.com>
+  vendor: Pi Agence
+  synopsis: Assistant IA de bureau de l'agence
+  description: Assistant IA de bureau basé sur l'agent Pi, configuré et sécurisé par l'agence.
   target:
     - target: AppImage
-      arch:
-        - x64
-    - target: deb
       arch:
         - x64
 
 deb:
   artifactName: ${productName}_${version}_${arch}.${ext}
-  packageName: pi-gui
+  packageName: pi-agence
   packageCategory: devel
   priority: optional
   afterRemove: resources/linux/after-remove.sh
@@ -90,7 +91,7 @@ deb:
     - libgbm1
 
 win:
-  executableName: pi-gui
+  executableName: pi-agence
   # Keep icon/version metadata editing; signing is optional without credentials.
   signAndEditExecutable: true
   target:
